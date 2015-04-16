@@ -23,6 +23,8 @@ module.exports = function(grunt) {
   // Project configuration.
   grunt.initConfig({
 
+    aws: grunt.file.readJSON("credentials.json"),
+
     config: {
       src: 'src',
       dist: 'dist'
@@ -103,11 +105,28 @@ module.exports = function(grunt) {
 
     // Before generating any new files,
     // remove any previously-created files.
-    clean: ['<%= config.dist %>/**/*.{html,xml}']
+    clean: ['<%= config.dist %>/**/*.{html,xml}'],
+
+
+
+    
+    s3: {
+      options: {
+        accessKeyId: "<%= aws.accessKeyId %>",
+        secretAccessKey: "<%= aws.secretAccessKey %>",
+        bucket: "pastiche"
+      },
+      build: {
+        cwd: "dist/",
+        src: "**"
+      }
+    }
+ 
 
   });
 
   grunt.loadNpmTasks('assemble');
+  grunt.loadNpmTasks('grunt-aws');
 
   grunt.registerTask('server', [
     'build',
@@ -118,11 +137,13 @@ module.exports = function(grunt) {
   grunt.registerTask('build', [
     'clean',
     'copy',
-    'assemble'
+    'assemble',
+    's3'
   ]);
 
   grunt.registerTask('default', [
-    'build'
+    'build',
+    's3'
   ]);
 
 };
